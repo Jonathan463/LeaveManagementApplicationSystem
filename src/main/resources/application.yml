@@ -1,0 +1,9 @@
+info:
+  application:
+    name: leave-management-application-system
+    description: A leave management system.
+    author: Godson Jonathan Chidubem
+    version: '@project.version@'
+spring:
+  profiles:
+    active: prod
