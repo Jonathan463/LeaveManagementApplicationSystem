@@ -1,9 +1,19 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/leavemanagement
+    url: jdbc:postgresql://localhost:5432/leavemanagementDB
     username: postgres
     password: 30496039
-
+  jpa:
+    hibernate:
+      ddl-auto: update
   sql:
     init:
       mode: always
+
+
+
+server:
+  port: 8080
+
+jwt:
+  key: thisisacodingjustasdemonstrationforsecretkeyinspringsecurityjsonwebtokenauthentication

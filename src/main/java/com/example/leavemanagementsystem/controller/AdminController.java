@@ -25,7 +25,7 @@ public class AdminController {
     @Autowired
     private StaffService staffService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     @PostMapping("/staff")
     public ResponseEntity<StaffResponseDTO> addStaff(@Valid @RequestBody CreateStaffRequestDTO staff) {
         return ResponseEntity.ok(staffService.addStaff(staff));

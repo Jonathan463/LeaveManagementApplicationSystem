@@ -8,6 +8,7 @@ import com.example.leavemanagementsystem.enums.RoleName;
 import com.example.leavemanagementsystem.security.JwtAuthenticationHelper;
 import com.example.leavemanagementsystem.service.StaffService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/v1/auth")
 @Validated
+@Slf4j
 public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -43,10 +45,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseDTO<?>> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
-
+    public ResponseEntity<ResponseDTO> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
+       log.info("Request got here 1 {}",loginRequest);
        ResponseDTO responseDTO = userService.userLogin(loginRequest);
+        log.info("Request got here 2");
        int status = responseDTO.getStatusCode();
+        log.info("Request got here 3 ");
         return new ResponseEntity<>(responseDTO, status != 200 ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK);
     }
 }

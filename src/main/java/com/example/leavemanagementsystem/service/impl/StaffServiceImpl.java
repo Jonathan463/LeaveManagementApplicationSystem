@@ -11,6 +11,7 @@ import com.example.leavemanagementsystem.model.Staff;
 import com.example.leavemanagementsystem.repository.StaffRepository;
 import com.example.leavemanagementsystem.security.JwtAuthenticationHelper;
 import com.example.leavemanagementsystem.service.StaffService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class StaffServiceImpl implements StaffService, UserDetailsService {
     @Autowired
     private StaffRepository staffRepository;
@@ -71,6 +73,7 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
         staff.setPassword(passwordEncoder.encode(createStaffRequestDTO.password()));
         staff.setFirstName(createStaffRequestDTO.firstName());
         staff.setLastName(createStaffRequestDTO.lastName());
+        staff.setEmail(createStaffRequestDTO.email());
         staff.setAnnualLeaveBalance(ANNUAL_LEAVE_BALANCE);
         staff.setExamLeaveBalance(EXAM_LEAVE_BALANCE);
         staff.setSickLeaveBalance(SICK_LEAVE_BALANCE);
@@ -79,10 +82,8 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
         Staff savedStaff = staffRepository.save(staff);
 
 
-//        INSERT INTO public.staff(
-//                annual_leave_balance, compassionate_leave_balance, exam_leave_balance, sick_leave_balance, line_manager_id, role_id, department, email, first_name, last_name, password, staff_id)
-//        VALUES (20, 14, 5, 10, 0, 1, 'Maths', 'jonathan39@gmail.com', 'Jonathan', 'godson', '$2a$12$o9KFPRbCrSR.yBGPHP5D5.b9uu3rfIzCOF4XBRUWmcyFMiBb7CE3K', 'admin');
-        return new StaffResponseDTO(savedStaff.getStaffId(), staff.getLastName(), savedStaff.getFirstName(),savedStaff.getRole().toString());
+
+        return new StaffResponseDTO(savedStaff.getFirstName(), staff.getLastName(), savedStaff.getStaffId() ,savedStaff.getRole().getRoleName());
 
     }
 
@@ -117,26 +118,37 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
 
     @Override
     public ResponseDTO<?> userLogin(LoginRequest loginRequest) {
+
         Staff appUser;
+        String token;
         if(loginRequest.getUserName().equalsIgnoreCase("Admin")){
             appUser = staffRepository.findByStaffId(loginRequest.getUserName()).orElseThrow(()->new ResourceNotFoundException("User does not exist"));
+            token = jwtHelper.generateToken(appUser.getUsername());
         }
         else {
             appUser = loadUserByUsername(loginRequest.getUserName());
+            token = jwtHelper.generateToken(appUser.getEmail());
+
         }
+
         if (!appUser.isEnabled()){
+
             return ResponseDTO.builder()
                     .statusCode(400)
-                    .responseMessage("User Account deactivated")
+                    .responseMessage("User Account deactivated ***************")
                     .build();
         }
         if (!passwordEncoder.matches(loginRequest.getPassword(), appUser.getPassword())){
+            log.info("Mapping password ***************");
+
             return ResponseDTO.builder()
                     .statusCode(400)
                     .responseMessage("Invalid user credential")
                     .build();
         }
-        String token = jwtHelper.generateToken(appUser.getUsername());
+
+
+        log.info("Past token generation *******************");
         LoginResponseDTO loginResponseDTO = LoginResponseDTO.builder()
                 .firstName(appUser.getFirstName())
                 .lastName(appUser.getLastName())
