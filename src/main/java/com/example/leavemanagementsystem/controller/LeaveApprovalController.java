@@ -24,14 +24,12 @@ public class LeaveApprovalController {
     @Autowired
     private LeaveRequestService leaveRequestService;
 
-    @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/leave/pending")
     public ResponseEntity<List<LeaveResponseDTO>> getPendingRequests() {
         String managerId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(leaveRequestService.getPendingRequestsForManager(managerId));
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/leave/approve/{requestId}")
     public ResponseEntity<LeaveRequest> approveLeave(@PathVariable
                                                          @Pattern(regexp = "^\\d+$")
@@ -39,7 +37,6 @@ public class LeaveApprovalController {
         return ResponseEntity.ok(leaveRequestService.approveLeave(requestId));
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/leave/reject/{requestId}")
     public ResponseEntity<Void> rejectLeave(@PathVariable
                                                 @Pattern(regexp = "^\\d+$")

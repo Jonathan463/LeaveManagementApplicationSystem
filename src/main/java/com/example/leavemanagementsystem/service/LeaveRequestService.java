@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface LeaveRequestService {
     public LeaveRequest createLeaveRequest(String staffId, LeaveRequestDTO leaveDTO) throws Exception;
-    public List<LeaveResponseDTO> getLeaveHistory(String staffId);
+    public List<LeaveRequest> getLeaveHistory(String staffId);
     public List<LeaveResponseDTO> getPendingRequestsForManager(String managerId);
     public LeaveRequest approveLeave(Long requestId) throws Exception;
     public void rejectLeave(Long requestId) throws Exception;

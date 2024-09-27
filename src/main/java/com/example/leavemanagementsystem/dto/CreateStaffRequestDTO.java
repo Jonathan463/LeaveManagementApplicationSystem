@@ -22,6 +22,7 @@ public record CreateStaffRequestDTO(
         String department,
         @NotEmpty(message = "password cannot be null or empty")
         String password,
+        @NotEmpty(message = "role cannot be null or empty")
         String role
 
 ) {}

@@ -10,15 +10,18 @@ import com.example.leavemanagementsystem.repository.LeaveRequestRepository;
 import com.example.leavemanagementsystem.repository.StaffRepository;
 import com.example.leavemanagementsystem.service.LeaveRequestService;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.temporal.ChronoUnit;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class LeaveRequestServiceImpl implements LeaveRequestService {
     @Autowired
     private LeaveRequestRepository leaveRequestRepository;
@@ -31,18 +34,23 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     private static final int ANNUAL_LEAVE_BALANCE = 20;
     private static final int MAX_ANNUAL_LEAVE_AT_ONCE = 14;
 
-    public LeaveRequest createLeaveRequest(String staffId, LeaveRequestDTO leaveDTO) throws Exception {
-        Staff staff = staffRepository.findByStaffId(staffId)
+    public LeaveRequest createLeaveRequest(String email, LeaveRequestDTO leaveDTO) throws Exception {
+        log.info("got to create leave ******************");
+        Staff staff = staffRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Staff not found"));
 
-        int leaveBalance = calculateLeaveBalance(staff, leaveDTO.leaveType().toString(), leaveDTO.leaveStartDate(), leaveDTO.leaveEndDate());
+        log.info("Find staff by email response ****************** {}",staff);
 
+
+        int leaveBalance = calculateLeaveBalance(staff, leaveDTO.leaveType().toString(), leaveDTO.leaveStartDate(), leaveDTO.leaveEndDate());
+         log.info("Calculate leave balance ****************** {}",leaveBalance);
         if (leaveBalance < 0) {
             throw new IllegalArgumentException("Insufficient leave balance");
         }
 
         LeaveRequest leaveRequest = new LeaveRequest();
         leaveRequest.setDateRequested(LocalDate.now());
+        leaveRequest.setEmail(email);
         leaveRequest.setInitialLeaveBalance(leaveBalance);
         leaveRequest.setLeaveType(leaveDTO.leaveType().toString());
         leaveRequest.setLeaveStartDate(leaveDTO.leaveStartDate());
@@ -51,10 +59,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
 
 
-//        leaveRequest.InitialLeaveBalance(leaveBalance);
-//        leaveRequest.setDateRequested(LocalDate.now());
-//        leaveRequest.setStatus(LeaveStatus.PENDING);
-//        leaveRequest.setManagerId(staff.getLineManagerId());
+        log.info("About to save leave request **************************");
 
         return leaveRequestRepository.save(leaveRequest);
     }
@@ -62,6 +67,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     private int calculateLeaveBalance(Staff staff, String leaveType, LocalDate start, LocalDate end) throws Exception {
         // Calculate the number of requested leave days
         long leaveDays = ChronoUnit.DAYS.between(start, end);
+        log.info("Leave Days **************** {}",leaveDays);
 
         if (leaveDays <= 0) {
             throw new Exception("Invalid leave duration: End date must be after start date.");
@@ -71,21 +77,21 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         int maxLeaveAtOnce = Integer.MAX_VALUE;  // Default for leaves without restrictions on consecutive days
 
         switch (leaveType.toUpperCase()) {
-            case "SICK_LEAVE":
+            case "SICK":
                 currentBalance = staff.getSickLeaveBalance();
                 if (leaveDays > SICK_LEAVE_BALANCE) {
                     throw new Exception("Sick leave request exceeds available balance.");
                 }
                 break;
 
-            case "EXAM_LEAVE":
+            case "EXAM":
                 currentBalance = staff.getExamLeaveBalance();
                 if (leaveDays > EXAM_LEAVE_BALANCE) {
                     throw new Exception("Exam leave request exceeds available balance.");
                 }
                 break;
 
-            case "ANNUAL_LEAVE":
+            case "ANNUAL":
                 currentBalance = staff.getAnnualLeaveBalance();
                 maxLeaveAtOnce = MAX_ANNUAL_LEAVE_AT_ONCE;
                 if (leaveDays > maxLeaveAtOnce) {
@@ -96,17 +102,15 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 }
                 break;
 
-            case "COMPASSIONATE_LEAVE":
+            case "COMPASSIONATE":
                 currentBalance = staff.getCompassionateLeaveBalance();
                 // Compassionate leave doesn't have a typical balance constraint, so we don't enforce strict balance rules here.
-                // Implement logic based on company policy if needed.
                 break;
 
             default:
                 throw new Exception("Invalid leave type: " + leaveType);
         }
 
-        // Deduct the leave days from the current balance
         int newBalance = (int) (currentBalance - leaveDays);
 
         // Return the new balance
@@ -114,8 +118,13 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
 
-    public List<LeaveResponseDTO> getLeaveHistory(String staffId) {
-        return leaveRequestRepository.findByStaffId(staffId);
+    public List<LeaveRequest> getLeaveHistory(String email) {
+
+
+                List<LeaveRequest> leaveRequestList = leaveRequestRepository.findAllLeave(email);
+                log.info("Leave history from DB {}",leaveRequestList);
+                return leaveRequestList;
+
     }
 
     public List<LeaveResponseDTO> getPendingRequestsForManager(String managerId) {
@@ -128,7 +137,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         request.setStatus(LeaveStatus.APPROVED);
         request.setDateApproved(LocalDate.now());
 
-        Staff staff = staffRepository.findByStaffId(request.getStaffId())
+        Staff staff = staffRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Staff not found"));
 
         updateLeaveBalance(staff, request);

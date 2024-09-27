@@ -46,11 +46,11 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ResponseDTO> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
-       log.info("Request got here 1 {}",loginRequest);
+
        ResponseDTO responseDTO = userService.userLogin(loginRequest);
-        log.info("Request got here 2");
+
        int status = responseDTO.getStatusCode();
-        log.info("Request got here 3 ");
+
         return new ResponseEntity<>(responseDTO, status != 200 ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK);
     }
 }

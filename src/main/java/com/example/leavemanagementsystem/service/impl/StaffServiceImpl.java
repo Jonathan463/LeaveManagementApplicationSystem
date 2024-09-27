@@ -8,6 +8,7 @@ import com.example.leavemanagementsystem.dto.StaffResponseDTO;
 import com.example.leavemanagementsystem.exception.ResourceNotFoundException;
 import com.example.leavemanagementsystem.model.Role;
 import com.example.leavemanagementsystem.model.Staff;
+import com.example.leavemanagementsystem.repository.RoleRepository;
 import com.example.leavemanagementsystem.repository.StaffRepository;
 import com.example.leavemanagementsystem.security.JwtAuthenticationHelper;
 import com.example.leavemanagementsystem.service.StaffService;
@@ -31,6 +32,9 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
     private StaffRepository staffRepository;
 
     @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -44,6 +48,7 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
         if (staffRepository.findByEmail(createStaffRequestDTO.email()).isPresent()) {
             throw new RuntimeException("Staff already exists");
         }
+        Role role = roleRepository.findByRoleName(createStaffRequestDTO.role()).orElseThrow(()-> new ResourceNotFoundException("Role does not exist"));
         Staff staff = new Staff();
 
 
@@ -54,15 +59,15 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
             staff.setLineManagerId(1L);
         }
         else {
-            List<Staff> staffMamagers = staffRepository.findByDepartmentAndLineManagerId(createStaffRequestDTO.department(), 1L);
-            System.out.println(staffMamagers.get(0));
+            List<Staff> staffManagers = staffRepository.findByDepartmentAndLineManagerId(createStaffRequestDTO.department(), 1L);
+            System.out.println(staffManagers.get(0));
 
-            staff.setLineManagerId(staffMamagers.get(0).getId());
+            staff.setLineManagerId(staffManagers.get(0).getId());
 
         }
 
-        Role role = new Role();
-        role.setRoleName(stringRole);
+        //Role role = new Role();
+        //role.setRoleName(stringRole);
         
         String staffId = UUID.randomUUID().toString();
 
@@ -123,11 +128,11 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
         String token;
         if(loginRequest.getUserName().equalsIgnoreCase("Admin")){
             appUser = staffRepository.findByStaffId(loginRequest.getUserName()).orElseThrow(()->new ResourceNotFoundException("User does not exist"));
-            token = jwtHelper.generateToken(appUser.getUsername());
+            token = jwtHelper.generateToken(appUser,appUser.getUsername());
         }
         else {
             appUser = loadUserByUsername(loginRequest.getUserName());
-            token = jwtHelper.generateToken(appUser.getEmail());
+            token = jwtHelper.generateToken(appUser,appUser.getEmail());
 
         }
 
@@ -135,11 +140,11 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
 
             return ResponseDTO.builder()
                     .statusCode(400)
-                    .responseMessage("User Account deactivated ***************")
+                    .responseMessage("User Account deactivated")
                     .build();
         }
         if (!passwordEncoder.matches(loginRequest.getPassword(), appUser.getPassword())){
-            log.info("Mapping password ***************");
+
 
             return ResponseDTO.builder()
                     .statusCode(400)
@@ -147,8 +152,6 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
                     .build();
         }
 
-
-        log.info("Past token generation *******************");
         LoginResponseDTO loginResponseDTO = LoginResponseDTO.builder()
                 .firstName(appUser.getFirstName())
                 .lastName(appUser.getLastName())
@@ -163,6 +166,10 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
 
     @Override
     public Staff loadUserByUsername(String username) throws UsernameNotFoundException {
+        if(username.equalsIgnoreCase("ADMIN")){
+            return staffRepository.findByStaffId(username).orElseThrow( () -> new UsernameNotFoundException("Username: " + username + " not found"));
+        }
         return staffRepository.findByEmail(username).orElseThrow( () -> new UsernameNotFoundException("Username: " + username + " not found"));
+
     }
 }

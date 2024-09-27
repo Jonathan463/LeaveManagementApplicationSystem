@@ -31,7 +31,6 @@ public class AdminController {
         return ResponseEntity.ok(staffService.addStaff(staff));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/staff/{id}")
     public ResponseEntity<StaffResponseDTO> editStaff(@PathVariable
                                                           @Pattern(regexp = "^\\d+$")
@@ -39,7 +38,6 @@ public class AdminController {
         return ResponseEntity.ok(staffService.editStaff(id, staffDetails));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/staff/{id}")
     public ResponseEntity<?> deleteStaff(@PathVariable
                                              @Pattern(regexp = "^\\d+$")

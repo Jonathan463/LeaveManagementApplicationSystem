@@ -5,12 +5,15 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtAuthenticationHelper {
@@ -37,11 +40,20 @@ public class JwtAuthenticationHelper {
         return expDate.before(new Date());
     }
 
-    public String generateToken(String username) {
-
+    public String generateToken(UserDetails userDetails, String email) {
+        String username;
+        if(userDetails.getUsername().equalsIgnoreCase("ADMIN")){
+            username = userDetails.getUsername();
+        }
+        else{
+            username = email;
+        }
         // populate the token with any data of choice here
         Map<String,Object> claims = new HashMap<>();
-
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(grantedAuthority -> grantedAuthority.getAuthority())
+                .collect(Collectors.toList());
+        claims.put("roles", roles);
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)

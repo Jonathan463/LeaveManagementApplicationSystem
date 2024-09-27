@@ -39,8 +39,13 @@ public class SecurityConfig {
                         .requestMatchers(AUTH_WHITELIST).permitAll() // Allow login and signup requests
                         .requestMatchers(HttpMethod.POST, "/api/v1/admin/staff").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/admin/staff/{id}").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/admin/staff/{id}").hasAuthority("ADMIN")
-                        .anyRequest().authenticated() // Require authentication for all other requests
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/staff/{id}").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/manager/leave/pending").hasAuthority("MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/manager/leave/approve/{requestId}").hasAuthority("MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/manager/leave/reject/{requestId}").hasAuthority("MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/user/leave").hasAnyAuthority("ADMIN","MANAGER","ROLE_USER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/user/leave/history").hasAnyAuthority("ADMIN","MANAGER","ROLE_USER")
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless session management
