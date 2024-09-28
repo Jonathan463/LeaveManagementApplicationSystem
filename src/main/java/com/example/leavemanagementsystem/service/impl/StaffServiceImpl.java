@@ -60,7 +60,7 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
         }
         else {
             List<Staff> staffManagers = staffRepository.findByDepartmentAndLineManagerId(createStaffRequestDTO.department(), 1L);
-            System.out.println(staffManagers.get(0));
+            log.info("STAFF_MANAGER{}", staffManagers.get(0));
 
             staff.setLineManagerId(staffManagers.get(0).getId());
 
@@ -68,7 +68,7 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
 
         //Role role = new Role();
         //role.setRoleName(stringRole);
-        
+
         String staffId = UUID.randomUUID().toString();
 
 
@@ -95,18 +95,18 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
     public StaffResponseDTO editStaff(Long id, CreateStaffRequestDTO staffDetails) {
         Staff staff = staffRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Staff not found"));
 
-        
+
 
         Role role = new Role();
         role.setRoleName(staffDetails.role());
-        
+
         Staff updatedStaff = new Staff();
         updatedStaff.setFirstName(staffDetails.firstName());
         updatedStaff.setLastName(staffDetails.lastName());
         updatedStaff.setRole(role);
-        
 
-                Staff savedStaff = staffRepository.save(updatedStaff);
+
+        Staff savedStaff = staffRepository.save(updatedStaff);
 
         //StaffResponseDTO staffResponseDTO = new StaffResponseDTO(staff.getFirstName(),staff.getLastName(), staff.getStaffId(), savedStaff.getRole());
 
