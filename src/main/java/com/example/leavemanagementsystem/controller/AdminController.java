@@ -33,15 +33,15 @@ public class AdminController {
 
     @PutMapping("/staff/{id}")
     public ResponseEntity<StaffResponseDTO> editStaff(@PathVariable
-                                                          @Pattern(regexp = "^\\d+$")
-                                                          Long id, @Valid @RequestBody CreateStaffRequestDTO staffDetails) {
+                                                      @Pattern(regexp = "^\\d+$")
+                                                      Long id, @Valid @RequestBody CreateStaffRequestDTO staffDetails) {
         return ResponseEntity.ok(staffService.editStaff(id, staffDetails));
     }
 
     @DeleteMapping("/staff/{id}")
     public ResponseEntity<?> deleteStaff(@PathVariable
-                                             @Pattern(regexp = "^\\d+$")
-                                             Long id) {
+                                         @Pattern(regexp = "^\\d+$")
+                                         Long id) {
         staffService.deleteStaff(id);
         return ResponseEntity.ok().build();
     }

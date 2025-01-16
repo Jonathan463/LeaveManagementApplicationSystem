@@ -54,8 +54,8 @@ public class LeaveApprovalController {
 
     @PostMapping("/leaves/reject/{requestId}")
     public ResponseEntity<Void> rejectLeave(@PathVariable
-                                                @Pattern(regexp = "^\\d+$")
-                                                Long requestId) throws Exception {
+                                            @Pattern(regexp = "^\\d+$")
+                                            Long requestId) throws Exception {
         leaveRequestService.rejectLeave(requestId);
         return ResponseEntity.ok().build();
     }

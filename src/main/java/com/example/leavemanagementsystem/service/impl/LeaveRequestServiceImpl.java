@@ -43,7 +43,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         int currentLeaveBal = calculateLeaveInitialBalance(staff, leaveDTO.leaveType().toString());
 
         int leaveNewBalance = calculateLeaveBalance(staff, leaveDTO.leaveType().toString(), leaveDTO.leaveStartDate(), leaveDTO.leaveEndDate());
-         log.info("Calculate leave balance ****************** {}",leaveNewBalance);
+        log.info("Calculate leave balance ****************** {}",leaveNewBalance);
         if (leaveNewBalance < 0) {
             throw new IllegalArgumentException("Insufficient leave balance");
         }
@@ -207,50 +207,49 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     private void updateLeaveBalance(Staff staff, LeaveRequest request) throws Exception {
 
-            String leaveType = request.getLeaveType();
-            LocalDate startDate = request.getLeaveStartDate();
-            LocalDate endDate = request.getLeaveEndDate();
+        String leaveType = request.getLeaveType();
+        LocalDate startDate = request.getLeaveStartDate();
+        LocalDate endDate = request.getLeaveEndDate();
 
-            // Calculate the number of leave days requested
-            long leaveDays = ChronoUnit.DAYS.between(startDate, endDate);
+        // Calculate the number of leave days requested
+        long leaveDays = ChronoUnit.DAYS.between(startDate, endDate);
+        // Update the leave balance based on the leave type
+        switch (leaveType.toUpperCase()) {
+            case "SICK":
+                if (staff.getSickLeaveBalance() < leaveDays) {
+                    throw new Exception("Insufficient sick leave balance.");
+                }
+                staff.setSickLeaveBalance((int) (staff.getSickLeaveBalance() - leaveDays));
+                break;
 
-            // Update the leave balance based on the leave type
-            switch (leaveType.toUpperCase()) {
-                case "SICK":
-                    if (staff.getSickLeaveBalance() < leaveDays) {
-                        throw new Exception("Insufficient sick leave balance.");
-                    }
-                    staff.setSickLeaveBalance((int) (staff.getSickLeaveBalance() - leaveDays));
-                    break;
+            case "EXAM":
+                if (staff.getExamLeaveBalance() < leaveDays) {
+                    throw new Exception("Insufficient exam leave balance.");
+                }
+                staff.setExamLeaveBalance((int) (staff.getExamLeaveBalance() - leaveDays));
+                break;
 
-                case "EXAM":
-                    if (staff.getExamLeaveBalance() < leaveDays) {
-                        throw new Exception("Insufficient exam leave balance.");
-                    }
-                    staff.setExamLeaveBalance((int) (staff.getExamLeaveBalance() - leaveDays));
-                    break;
+            case "ANNUAL_LEAVE":
+                if (leaveDays > 14) {
+                    throw new Exception("Cannot request more than 14 days of annual leave at once.");
+                }
+                if (staff.getAnnualLeaveBalance() < leaveDays) {
+                    throw new Exception("Insufficient annual leave balance.");
+                }
+                staff.setAnnualLeaveBalance((int) (staff.getAnnualLeaveBalance() - leaveDays));
+                break;
 
-                case "ANNUAL_LEAVE":
-                    if (leaveDays > 14) {
-                        throw new Exception("Cannot request more than 14 days of annual leave at once.");
-                    }
-                    if (staff.getAnnualLeaveBalance() < leaveDays) {
-                        throw new Exception("Insufficient annual leave balance.");
-                    }
-                    staff.setAnnualLeaveBalance((int) (staff.getAnnualLeaveBalance() - leaveDays));
-                    break;
+            case "COMPASSIONATE_LEAVE":
+                if (staff.getCompassionateLeaveBalance() < leaveDays) {
+                    throw new Exception("Insufficient compassionate leave balance.");
+                }
+                staff.setCompassionateLeaveBalance((int) (staff.getCompassionateLeaveBalance() - leaveDays));
+                break;
 
-                case "COMPASSIONATE_LEAVE":
-                    if (staff.getCompassionateLeaveBalance() < leaveDays) {
-                        throw new Exception("Insufficient compassionate leave balance.");
-                    }
-                    staff.setCompassionateLeaveBalance((int) (staff.getCompassionateLeaveBalance() - leaveDays));
-                    break;
-
-                default:
-                    throw new Exception("Invalid leave type: " + leaveType);
-            }
+            default:
+                throw new Exception("Invalid leave type: " + leaveType);
         }
+    }
     @Transactional
     public void rejectLeave(Long requestId) throws Exception {
         Optional<LeaveRequest> leaveRequestOptional = leaveRequestRepository.findById(requestId);
