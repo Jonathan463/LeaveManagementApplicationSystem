@@ -40,5 +40,5 @@ public class LeaveRequest {
     private LocalDate dateApproved;
 
     // Assuming reference to staff's line manager for approvals
-    private String managerId;
+    private long managerId;
 }

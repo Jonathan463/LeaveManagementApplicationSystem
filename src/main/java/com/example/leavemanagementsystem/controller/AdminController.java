@@ -29,7 +29,7 @@ public class AdminController {
     @PostMapping("/staff")
     public ResponseEntity<StaffResponseDTO> addStaff(@Valid @RequestBody CreateStaffRequestDTO staff) {
         return ResponseEntity.ok(staffService.addStaff(staff));
-    }
+    } // fine
 
     @PutMapping("/staff/{id}")
     public ResponseEntity<StaffResponseDTO> editStaff(@PathVariable

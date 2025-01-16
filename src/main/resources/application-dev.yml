@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/leavemanagementDB
-    username: postgres
-    password: 30496039
+    url: jdbc:mysql://localhost:3306/leave-manager?createDatabaseIfNotExist=true&userSSL=false&serverTimezone=UTC
+    username: root
+    password: password
   jpa:
     hibernate:
       ddl-auto: update

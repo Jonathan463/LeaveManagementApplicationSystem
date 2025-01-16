@@ -60,7 +60,7 @@ public class StaffServiceImpl implements StaffService, UserDetailsService {
         }
         else {
             List<Staff> staffManagers = staffRepository.findByDepartmentAndLineManagerId(createStaffRequestDTO.department(), 1L);
-            System.out.println(staffManagers.get(0));
+            log.info("STAFF_MANAGER{}", staffManagers.get(0));
 
             staff.setLineManagerId(staffManagers.get(0).getId());
 
